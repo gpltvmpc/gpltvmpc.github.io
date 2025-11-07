@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- Main Step: Edit below title -->
+    <title>Convex Data-Driven Model Predictive Control for Trajectory Tracking in Robotic Manipulators</title>
+
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="" />
+    <meta
+      name="keywords"
+      content="research papers, academic papers, AI research, robotics research, machine learning, published papers, scientific papers, academic journals"
+    />
+    
+    <link
+      rel="icon"
+      href="Assets/Favicon/icons8-research-color-16.png"
+      sizes="16x16"
+      type="image/png"
+    />
+    <link
+      rel="icon"
+      href="Assets/Favicon/icons8-research-color-32.png"
+      sizes="32x32"
+      type="image/png"
+    />
+    <link
+      rel="icon"
+      href="Assets/Favicon/icons8-research-color-70.png"
+      sizes="70x70"
+      type="image/png"
+    />
+    <link
+      rel="icon"
+      href="Assets/Favicon/icons8-research-color-72.png"
+      sizes="72x72"
+      type="image/png"
+    />
+    <link
+      rel="icon"
+      href="Assets/Favicon/icons8-research-color-96.png"
+      sizes="96x96"
+      type="image/png"
+    />
+
+    <link rel="stylesheet" type="text/css" href="style.css" />
+  </head>
+  <body>
+    <nav class="nav">
+      <a href="#results">Supplementary Video</a>
+      <a href="#Additional-Real-World-details">Additional real-world details</a>
+      <a href="#Additional-simulation-details">Additional simulation details</a>
+      <button class="toggle-btn" onclick="toggleDarkMode()">
+        Toggle Dark Mode
+      </button>
+    </nav>
+
+    <div class="header">
+      <h1>Convex Data-Driven Model Predictive Control for Trajectory Tracking in Robotic Manipulators</h1>
+      <div class="authors">
+        <p>
+          Author Names Omitted for Anonymous Review.
+        </p>
+      </div>
+    </div>
+
+    <div class="buttons">
+      <a href="#" target="_blank">Paper</a>
+      <a href="#" target="_blank">Videos</a>
+      <a href="#" target="_blank">Code</a>
+      <a href="#bibtex">BibTex</a>
+    </div>
+
+    <div class="abstract" id="abstract">
+      <h2>Abstract</h2>
+      <p>Accurate trajectory tracking is a fundamental control task in robotics, typically achieved using model-based methods. Computed Torque Control (CTC) is computationally efficient but struggles to handle system constraints, while Model Predictive Control (MPC) can manage constraints but often results in nonlinear formulations. This work introduces a convex Model Predictive Control (MPC) formulation that incorporates learned dynamics for a robot manipulator. A nonparametric model is used to learn the residual between a nominal model and the observed dynamics, using an inverse dynamics formulation. Convexification is achieved by applying implicit partial differentiation to linearize the inverse dynamics model augmented with the residual model along the reference trajectory, resulting in a Linear Time-Varying (LTV) system. Extensive simulations and hardware experiments on a Franka Emika Panda manipulator demonstrate that our convex MPC approach outperforms traditional learning-based models in handling a broad range of model mismatches and constraints. Results also show that learning the residual in inverse dynamics form offers better tracking performance than learning the residual in forward dynamics.</p>
+    </div>
+
+    <div class="single-image-container">
+      <img src="Assets/cover_plot.svg" alt="cover plot" />
+    </div>
+    
+    <b>Trajectory tracking experiments on a Franka Emika Panda robot (control at 500Hz).</b> The nominal model underestimates the masses of link 5, 6, 7 (highlighted in red). Significant torque limits are imposed on the robot's joints. <i>CTC-PD</i> is the Computed Torque Controller with Proportional-Derivative feedback. <i>CTC-PD nominal</i> uses only the nominal model, while <i>CTC-PD learned</i> and the proposed <i>inverse LTVMPC</i> augment the nominal model with a learned residual model. Under severe torque limits and model mismatch, <i>CTC-PD nominal</i> fails to track the reference trajectory. <i>CTC-PD learned</i> improves tracking performance but exhibits oscillatory behavior. Because <i>inverse LTVMPC</i> handles constraints explicitly, it achieves the lowest tracking error and the smoothest trajectory.
+
+    <div class="content-section" id="results">
+      <h2>Supplementary Video</h2>
+      <div class="video-container">
+        <iframe
+          src="https://www.youtube.com/embed/W3vpFNL0m1I?si=_zOMFCEihCTzoGfD"
+          title="YouTube video player"
+          frameborder="0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          referrerpolicy="strict-origin-when-cross-origin"
+          allowfullscreen
+        ></iframe>
+      </div>
+    </div>
+
+    <div class="content-section" id="Additional-Real-World-details">
+      <h2>Additional real-world details</h2>
+      <h3>Implementation details</h3>
+
+      <p>For LTVMPC approaches, the <a href="https://github.com/oxfordcontrol/Clarabel.rs">Clarabel</a> solver used in the simulation did not solve fast enough for a 500Hz control loop. Hence, we switched to the Dual Active-Set solver <a href="https://github.com/darnstrom/daqp">DAQP</a>, which met our real-time requirements. Both <a href="https://github.com/darnstrom/daqp">DAQP</a> and <a href="https://github.com/oxfordcontrol/Clarabel.rs">Clarabel</a> gives the same solution for a given OCP at default settings. For nonlinear MPC, the SNOPT solver used in the simulation experiments were also unable to achieve real-time requirements. Forward and inverse dynamics calculations, as well as their derivatives, were obtained via the <a href="https://github.com/stack-of-tasks/pinocchio">pinocchio</a>. We used <a href="https://github.com/florisvb/PyNumDiff">pynumdiff</a> with Savitzky-Golay filter for numerical differentiation.</p>
+      
+      <p>The joint positions, velocities, and torques measurements are read from Panda's state interface. In the 2-DoF and 3-DoF configurations, joint accelerations are obtained by numerically differentiating the measured velocities; for the 6-DoF configuration, accelerations are computed using the Panda's proprietary forward dynamics model.</p>
+
+      <h3>Additional results</h3>
+
+      <div class="carousel-single-container" id="imageCarouselSingle">
+        <div class="carousel-single-track">
+          <div class="carousel-single-slide">
+            <img src="Assets/2dof_no_handicap_cropped.png" alt="Slide 1" /> <span class="slide-caption">2-DoF</span>
+          </div>
+          <div class="carousel-single-slide">
+            <img src="Assets/3dof_no_handicap_cropped.png" alt="Slide 2" /> <span class="slide-caption">3-DoF</span>
+          </div>
+          <div class="carousel-single-slide">
+            <img src="Assets/6dof_no_handicap_cropped.png" alt="Slide 3" /> <span class="slide-caption">6-DoF</span>
+          </div>
+        </div>
+        <button class="carousel-button prev">←</button>
+        <button class="carousel-button next">→</button>
+        <div class="carousel-single-indicators"></div>
+      </div>
+
+      <p>Projection of end-effector position trajectory on a plane for different controllers in 2-Dof, 3-Dof and 6-Dof configuration under both the nominal pass and the learned pass <b>without</b> any torque handicap. The figure shows minimal differences between a well-tuned CTC-PD and inverse LTVMPC when both use the learned model.</p>
+
+      <hr class="rounded"></hr>
+
+      <p>CTC-PD slightly outperform LTVMPC-based methods in 3-Dof and 6-Dof configuration when all have access to high-quality dynamics model, i.e. being consistent with <a href="https://ieeexplore.ieee.org/document/8772145">[1]</a>, indicating that the difference in performance seen in this table likely stems from suboptimal MPC hyper-parameter tuning rather than intrinsic algorithmic limitations. This result also shows that inverse LTVMPC and forward LTVMPC exhibit nearly identical performance when both use purely parametric model.</p>
+
+      <table class="borders-custom col-1-c col-2-c col-3-c col-4-c col-5-c">
+        <caption>Tracking norm error on Panda Franka Emika with URDF consistent to <a href="https://ieeexplore.ieee.org/document/8772145">[1]</a>.</caption>
+        <colgroup>
+          <col class="border-left-thick border-right-thin">
+          <col class="border-right-thin">
+          <col class="border-right-thin">
+          <col class="border-right-thick">
+        </colgroup>
+        <tr class="border-top-thick border-bottom-thin">
+          <th>Configuration</th>
+          <th>CTC-PD</th>
+          <th>inverse LTVMPC</th>
+          <th>forward LTVMPC</th>
+        </tr>
+        <tr class="border-bottom-thin">
+          <th style="text-align:left">2 dof</th>
+          <td>2.2472</td>
+          <td>2.0647</td>
+          <td>2.0645</td>
+        </tr>
+        <tr class="border-bottom-thin">
+          <th style="text-align:left">3 dof</th>
+          <td>3.1407</td>
+          <td>3.2835</td>
+          <td>3.2837</td>
+        </tr>
+        <tr class="border-bottom-thick">
+          <th style="text-align:left">6 dof</th>
+          <td>4.5698</td>
+          <td>5.0722</td>
+          <td>5.0720</td>
+        </tr>
+      </table>
+
+      <hr class="rounded"></hr>
+
+      <p>This result presents the tracking errors for position, velocity, and their combined norm, comparing the inverse LTVMPC controller's performance during both the nominal and learned passes across all configurations without torque handicap. Using the learned model consistently reduces tracking errors across all configurations, with clear improvement in  position error.</p>
+
+      <table class="borders-custom col-1-c col-2-c col-3-c col-4-c col-5-c col-6-c col-7-c">
+        <caption>Comparison of tracking error on Panda Franka Emika for inverse LTVMPC controller</caption>
+        <colgroup>
+          <col class="border-left-thick border-right-thin">
+          <col class="border-right-thin">
+          <col class="border-right-thin">
+          <col class="border-right-thin">
+          <col class="border-right-thin">
+          <col class="border-right-thin">
+          <col class="border-right-thick">
+        </colgroup>
+        <tr class="border-top-thick">
+          <th rowspan="2" class="border-bottom-thin"></th>
+          <th colspan="3" class="border-bottom-thin"><em>Nominal</em> pass</th>
+          <th colspan="3" class="border-bottom-thin"><em>Learned</em> pass</th>
+        </tr>
+        <tr class="border-bottom-thin">
+          <th class="border-bottom-thin">position</th>
+          <th class="border-bottom-thin">velocity</th>
+          <th class="border-bottom-thin">norm</th>
+          <th class="border-bottom-thin">position</th>
+          <th class="border-bottom-thin">velocity</th>
+          <th class="border-bottom-thin">norm</th>
+        </tr>
+        <tr class="border-bottom-thin">
+          <th style="text-align:left">2-Dof</th>
+          <td>3.0331</td>
+          <td>2.9543</td>
+          <td>4.2341</td>
+          <td>0.3429</td>
+          <td>1.8658</td>
+          <td>1.8262</td>
+        </tr>
+        <tr class="border-bottom-thin">
+          <th scope="row" style="text-align:left">3-Dof</th>
+          <td>3.0835</td>
+          <td>3.6112</td>
+          <td>4.7485</td>
+          <td>0.4591</td>
+          <td>4.1680</td>
+          <td>4.1932</td>
+        </tr>
+        <tr class="border-bottom-thick">
+          <th scope="row" style="text-align:left">6-Dof</th>
+          <td>2.7419</td>
+          <td>5.6024</td>
+          <td>6.2374</td>
+          <td>1.5717</td>
+          <td>5.9545</td>
+          <td>6.1585</td>
+        </tr>
+      </table>
+
+    <div class="content-section" id="Additional-simulation-details">
+      
+      <h2>Additional simulation details</h2>
+
+      <div class="carousel-single-container" id="imageCarouselSingle3">
+        <div class="carousel-single-track">
+          <div class="carousel-single-slide">
+            <img src="Assets/example_fast_reference.png" alt="Slide 1" /> <span class="slide-caption">A sample of reference trajectory</span>
+          </div>
+        </div>
+      </div>
+      
+      <p>The random trajectories is generated such that the two-link manipulator starts from a stable equilibrium configuration, i.e. straight down. We then uniformly sample 15 random waypoints for the joint positions from the range $[-\pi, \pi]$ and fit a cubic spline through these points over a specified duration. The initial and terminal conditions for the splines are set such that the manipulator hangs straight down with no velocities. The velocity and acceleration profiles are obtained through first and second-order derivatives of the splines. The ground-truth required torque to follow this trajectory is obtained by rolling out the desired kinematic trajectory through the true inverse dynamics.</p>
+
+      <hr class="rounded"></hr>    
+      
+      <div class="carousel-single-container" id="imageCarouselSingle2">
+        <div class="carousel-single-track">
+          <div class="carousel-single-slide">
+            <img src="Assets/traj_1_joint_2_20.png" alt="Slide 4" /> <span class="slide-caption">Tracking Slow Trajectory</span>
+          </div>
+          <div class="carousel-single-slide">
+            <img src="Assets/traj_1_joint_2_10.png" alt="Slide 5" /> <span class="slide-caption">Tracking Fast Trajectory</span>
+          </div>
+        </div>
+        <button class="carousel-button prev">←</button>
+        <button class="carousel-button next">→</button>
+        <div class="carousel-single-indicators"></div>
+      </div>
+
+      <p>Nominal LTV-MPC trajectory tracking at different speeds. The nominal model has has a 20% discrepancy compared to the ground truth dynamics. Image on the left is tracking low-speed trajectory, image on the right is tracking high-speed trajectory.</p>
+
+      <p>This figure illustrates that the performance of LTVMPC with only the nominal model does not track the reference trajectory perfectly. It also shows that the tracking performance of the nominal LTVMPC degrades as the reference trajectory gets faster.</p>
+
+      <h3> Implementation details</h3>
+
+      <p>The dynamics is simulated in <a href="https://github.com/RobotLocomotion/drake">drake</a>. All of the Optimal Control Problem (OCP) are solved with the default solver with default solving options in <a href="https://github.com/RobotLocomotion/drake">drake</a>, i.e. <a href="https://github.com/oxfordcontrol/Clarabel.rs">Clarabel</a> for convex optimization and SNOPT for non-convex problems. The GPs were trained the <a href="https://github.com/SheffieldML/GPy">GPy</a>.</p>
+
+      <p>A 'scenario' comprises a reference trajectory, a controller, an initial condition, and a nominal model. For both sets of experiments, each scenario involves the controller tracking the reference trajectory twice: initially using only the nominal model, referred to as nominal pass, and subsequently using a residual model that is learned from data collected during the nominal pass, referred to as learned pass</p>
+      
+      <p>Nominal model has $D\%$ deviation from the ground truth. For example, With $D = 10$, the nominal mass and link lengths, $(m_1, m_2, l_1, l_2)$ can either be $(0.9, 1.1, 0.9, 1.1)$, $(1.1, 1.1, 1.1, 1.1)$, $(0.9, 0.9, 0.9, 0.9)$, or $(1.1, 0.9, 1.1, 0.9)$. Model difference in percentage is selected from the set $[0,10,20,30,40]$, resulting in 17 possible configurations.</p>
+      
+      <h3>Additional results</h3>
+      
+      <p>The solve time statistics presented here should be interpreted in a relative sense, as all implementations are simulated without using standard tools such as code generation for optimization. These times only represent the duration required to calculate the feedback term. This excludes the time taken to set up the OCP for MPC methods. For CTC-PD, this measures the time required to multiply the linear gain by the error in position and velocity</p>
+
+      <p>The solve times for CTC-PD and LTVMPC methods remain consistent across both passes. In contrast, NMPC experiences a significant increase in solve time due to the greater complexity of the dynamic constraints imposed by the forward dynamics augmented with GP. Additionally, it is clear that solve times for convex methods are much faster than those for non-convex ones.</p>
+
+      <table class="borders-custom col-1-c col-2-c col-3-c col-4-c col-5-c col-6-c">
+        <caption>Solve time statistics of "Tracking slow trajectories" experiment.</caption>
+        <colgroup>
+          <col class="border-left-thick border-right-thin">
+          <col class="border-right-thin">
+          <col class="border-right-thin">
+          <col class="border-right-thin">
+          <col class="border-right-thick">
+        </colgroup>
+        <tr class="border-top-thick">
+          <th rowspan="2" class="border-bottom-thin">Controllers</th>
+          <th colspan="2" class="border-bottom-thin">solve time(s), nominal model</th>
+          <th colspan="2" class="border-bottom-thin">solve time(s), learned model</th>
+        </tr>
+        <tr class="border-bottom-thin">
+          <th class="border-bottom-thin">mean</th>
+          <th class="border-bottom-thin">max</th>
+          <th class="border-bottom-thin">mean</th>
+          <th class="border-bottom-thin">max</th>
+        </tr>
+        <tr class="border-bottom-thin">
+          <th style="text-align:left">CTC-PD</th>
+          <td>0.000027 $\pm$ 0.000015</td>
+          <td>0.000210 $\pm$ 0.000638</td>
+          <td>0.000030 $\pm$ 0.000015</td>
+          <td>0.000222 $\pm$ 0.000748</td>
+        </tr>
+        <tr class="border-bottom-thin">
+          <th scope="row" style="text-align:left">forward LTVMPC</th>
+          <td>0.031 $\pm$ 0.008</td>
+          <td>0.056 $\pm$ 0.011</td>
+          <td>0.031 $\pm$ 0.007</td>
+          <td>0.055 $\pm$ 0.012</td>
+        </tr>
+        <tr class="border-bottom-thin">
+          <th scope="row" style="text-align:left">inverse LTVMPC</th>
+          <td>0.031 $\pm$ 0.008</td>
+          <td>0.056 $\pm$ 0.011</td>
+          <td>0.032 $\pm$ 0.008</td>
+          <td>0.056 $\pm$ 0.010</td>
+        </tr>
+        <tr class="border-bottom-thick">
+          <th scope="row" style="text-align:left">NMPC</th>
+          <td>0.402 $\pm$ 0.125</td>
+          <td>0.811 $\pm$ 0.369</td>
+          <td>3.738 $\pm$ 1.503</td>
+          <td>9.230 $\pm$ 5.132</td>
+        </tr>
+      </table>
+    
+      <p>This result follows the same trend to that of "Tracking slow trajectories". However, this results also shows that that during high-speed trajectory tracking, solve times increase accordingly when the required torque frequently reaches the limits of the torque constraints.</p>
+
+      <table class="borders-custom col-1-c col-2-c col-3-c col-4-c col-5-c col-6-c">
+        <caption>Solve time statistics of "Tracking fast trajectories" experiment.</caption>
+        <colgroup>
+          <col class="border-left-thick border-right-thin">
+          <col class="border-right-thin">
+          <col class="border-right-thin">
+          <col class="border-right-thin">
+          <col class="border-right-thick">
+        </colgroup>
+        <tr class="border-top-thick">
+          <th rowspan="2" class="border-bottom-thin">Controllers</th>
+          <th colspan="2" class="border-bottom-thin">solve time(s), nominal model</th>
+          <th colspan="2" class="border-bottom-thin">solve time(s), learned model</th>
+        </tr>
+        <tr class="border-bottom-thin">
+          <th class="border-bottom-thin">mean</th>
+          <th class="border-bottom-thin">max</th>
+          <th class="border-bottom-thin">mean</th>
+          <th class="border-bottom-thin">max</th>
+        </tr>
+        <tr class="border-bottom-thin">
+          <th style="text-align:left">CTC-PD</th>
+          <td>0.000035 $\pm$ 0.000019</td>
+          <td>0.000286 $\pm$ 0.000868</td>
+          <td>0.000036 $\pm$ 0.000018</td>
+          <td>0.000217 $\pm$ 0.000583</td>
+        </tr>
+        <tr class="border-bottom-thin">
+          <th scope="row" style="text-align:left">forward LTVMPC</th>
+          <td>0.033 $\pm$ 0.009</td>
+          <td>0.056 $\pm$ 0.013</td>
+          <td>0.033 $\pm$ 0.008</td>
+          <td>0.055 $\pm$ 0.013</td>
+        </tr>
+        <tr class="border-bottom-thin">
+          <th scope="row" style="text-align:left">inverse LTVMPC</th>
+          <td>0.033 $\pm$ 0.008</td>
+          <td>0.056 $\pm$ 0.015</td>
+          <td>0.033 $\pm$ 0.008</td>
+          <td>0.057 $\pm$ 0.014</td>
+        </tr>
+        <tr class="border-bottom-thick">
+          <th scope="row" style="text-align:left">NMPC</th>
+          <td>0.349 $\pm$ 0.092</td>
+          <td>0.604 $\pm$ 0.178</td>
+          <td>3.594 $\pm$ 0.921</td>
+          <td>13.198 $\pm$ 22.778</td>
+        </tr>
+      </table>
+
+
+      <hr class="rounded"></hr>
+
+      <p>The learned model only consistently improves the tracking performance of both the inverse LTVMPC and CTC-PD across all scenarios. The median of inverse LTVMPC outperforms that of CTC-PD by an order of 1.5 when there is $40\%$ model mismatch.</p>
+
+      <div class="embed-grid">
+        <figure class="embed">
+          <div class="embed-media">
+            <iframe
+              src="https://gpltvmpc.github.io//pass_0_slow"
+              title="Nominal Pass slow trajectory"
+              loading="lazy"
+              allow="fullscreen"
+            ></iframe>
+          </div>
+          <figcaption class="embed-caption">
+            Tracking SLOW trajectory with Nominal Model only 
+          </figcaption>
+        </figure>
+
+        <figure class="embed">
+          <div class="embed-media">
+            <iframe
+              src="https://gpltvmpc.github.io//pass_1_slow"
+              title="Learned Pass slow trajectory"
+              loading="lazy"
+              allow="fullscreen"
+            ></iframe>
+          </div>
+          <figcaption class="embed-caption">
+            Tracking SLOW trajectory with Learned Model
+          </figcaption>
+        </figure>
+      </div>
+
+      <hr class="rounded"></hr>
+
+      Inverse LTVMPC outperforms all other techniques in 90% of scenarios, tolerating up to 40 per cent in model mismatch. The learned model consistently improved the tracking performance of inverse LTVMPC across 90% of all scenarios. 
+      <div class="embed-grid">
+        <figure class="embed">
+          <div class="embed-media">
+            <iframe
+              src="https://gpltvmpc.github.io//pass_0_fast"
+              title="Nominal Pass fast trajectory"
+              loading="lazy"
+              allow="fullscreen"
+            ></iframe>
+          </div>
+          <figcaption class="embed-caption">
+            Tracking FAST trajectory with Nominal Model only 
+          </figcaption>
+        </figure>
+
+        <figure class="embed">
+          <div class="embed-media">
+            <iframe
+              src="https://gpltvmpc.github.io//pass_1_fast"
+              title="Learned Pass fast trajectory"
+              loading="lazy"
+              allow="fullscreen"
+            ></iframe>
+          </div>
+          <figcaption class="embed-caption">
+            Tracking FAST trajectory with Learned Model
+          </figcaption>
+        </figure>
+      </div>
+
+    <hr class="rounded"></hr>
+
+    <p>In this experiment, the analytical ground truth of the residual dynamics is used in place of the GP to simulate perfect knowledge of the model. Here, the residual dynamics is calculated using a symbolic engine. The figure presents the Mean State Cost (MSC) over the entire trajectory. The box extends from the 10th to the 90th percentile.</p>
+
+    <div class="carousel-single-container" id="imageCarouselSingle3">
+      <div class="carousel-single-track">
+        <div class="carousel-single-slide">
+          <img src="Assets/true_model_state_cost.png" alt="Slide 1" /> <span class="slide-caption">Tracking with ground-truth model</span>
+        </div>
+      </div>
+    </div>
+
+    <p>This experiment serves primarily as an ablation against potential modelling errors from the GP. Here we essentially study the effects of the linearization in isolation, assuming perfect residual modelling. Because all the controllers have access to the ground-truth residual dynamics, i.e. $\Delta\tau$ for inverse LTVMPC and CTC-PD, and $\Delta\ddot{q}$ for forward LTVMPC and NMPC, the performance remains consistent across different levels of model mismatch. Therefore, there is no further need to investigate the effect of varied levels of model's discrepancy. This result shows that all MPC methods achieve similar performance tracking low and high-speed trajectories. The solve times in this experiment were comparable to those in the experiments with GP for residual dynamics.</p>
+
+    <p>This result demonstrates that with accurate derivative prediction along the reference trajectory, LTVMPC methods have comparable tracking performance with NMPC but require only a fraction of the computational load. It also emphasizes the advantage of inverse dynamics formulation in LTVMPC. Under moderate model-plant mismatch, LTVMPC inverse offer better linearization due to the more accurate torque reference $\tau_d$, supporting the <i>observations 2</i> described in the paper.</p>
+
+
+    <a href="https://ieeexplore.ieee.org/document/8772145">[1] Claudio Gaz, Marco Cognetti, Alexander Oliva, Paolo Robuffo Giordano, and Alessandro De Luca. Dynamic identification of the franka emika panda robot with retrieval of feasible parameters using penalty-based optimization. IEEE Robotics and Automation Letters, 4(4):4147–4154, 2019</a>
+
+    <div class="footer">
+      <p>
+        Website template free to borrow from
+        <a
+          href="https://github.com/indramal/iNdra-GitHub-Page-Template-For-Resarch"
+          >here</a
+        >.
+      </p>
+    <button class="scrollUpBtn" id="scrollUpBtn" onclick="scrollToTop()">
+      ⬆
+    </button>
+
+    <script>
+      MathJax = {
+        tex: {
+          inlineMath: [['$', '$'],],
+        },
+      }
+      const typeFaceToggle = document.getElementById('typeface-toggle')
+      const typeface = document.getElementById('typeface')
+      typeFaceToggle.addEventListener('click', () => {
+        document.body.classList.toggle('libertinus')
+        typeface.textContent = document.body.classList.contains('libertinus') ? 'Libertinus' : 'Latin Modern'
+      })
+
+      const darkModeToggle = document.getElementById('dark-mode-toggle')
+      darkModeToggle.addEventListener('click', () => {
+        document.body.classList.toggle('latex-dark')
+      })
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="script.js"></script>
+  </body>
+</html>
